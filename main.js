@@ -3,20 +3,22 @@ const worldCtx = world.getContext("2d");
 const data = document.getElementById("data");
 const dataCtx = data.getContext("2d");
 const circleButton = document.getElementById("circle");
+const roundButton = document.getElementById("round");
 
 const size = 32;
 const spacing = 512 / size;
-
-const lightPos = [1024, 256];
-const lightRadius = 16;
-// const lightColor =
 
 let pixel = [-1, -1];
 
 world.addEventListener("mousemove", (e) => {
     const rect = world.getBoundingClientRect();
-    pixel[0] = Math.floor((e.clientX - rect.left) / spacing);
-    pixel[1] = Math.floor((e.clientY - rect.top) / spacing);
+    if (roundButton.checked) {
+        pixel[0] = Math.floor((e.clientX - rect.left) / spacing);
+        pixel[1] = Math.floor((e.clientY - rect.top) / spacing);
+    } else {
+        pixel[0] = (e.clientX - rect.left) / spacing - 0.5;
+        pixel[1] = (e.clientY - rect.top) / spacing - 0.5;
+    }
 });
 world.addEventListener("mouseleave", () => {
     pixel = [-1, -1];
@@ -77,15 +79,19 @@ function render() {
                 );
             }
             if (pixel[0] == -1 || tmax > tmin) {
+                let a = (tmax - tmin) * 4;
+                if (pixel[0] == -1) {
+                    a = 0.1;
+                }
+
+                worldCtx.strokeStyle = `rgba(0, 0, 0, ${a})`;
                 worldCtx.beginPath();
                 worldCtx.moveTo(0, x * spacing);
                 worldCtx.lineTo(512, y * spacing);
                 worldCtx.stroke();
 
                 if (pixel[0] != -1) {
-                    let a = (tmax - tmin) * 20;
-                    console.log(a);
-                    dataCtx.fillStyle = `rgba(0, 0, 0, ${a})`;
+                    dataCtx.fillStyle = `rgba(0, 0, 0, ${a * 5})`;
                     dataCtx.fillRect(
                         (x - 0.5) * spacing,
                         (y - 0.5) * spacing,

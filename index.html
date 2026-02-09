@@ -13,22 +13,32 @@
             <legend>Controls</legend>
 
             <div>
-                <input
-                    type="radio"
-                    id="circle"
-                    name="drone"
-                    value="circle"
-                    checked
-                />
+                <input type="radio" name="shape" value="circle" checked />
                 <label for="circle">Circle</label>
             </div>
             <div>
-                <input type="radio" id="square" name="drone" value="square" />
+                <input type="radio" name="shape" value="square" />
                 <label for="square">Square</label>
             </div>
             <div>
                 <input type="checkbox" id="round" />
                 <label for="square">Round to nearest</label>
+            </div>
+        </fieldset>
+        <fieldset>
+            <legend>Indexing Scheme</legend>
+
+            <div>
+                <input type="radio" name="index" value="lr" checked />
+                <label for="circle">(left, right)</label>
+            </div>
+            <div>
+                <input type="radio" name="index" value="rtheta" />
+                <label for="square">(radius, angle)</label>
+            </div>
+            <div>
+                <input type="radio" name="index" value="ytheta" />
+                <label for="square">(height, angle)</label>
             </div>
         </fieldset>
 

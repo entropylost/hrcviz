@@ -2,8 +2,20 @@ const world = document.getElementById("world");
 const worldCtx = world.getContext("2d");
 const data = document.getElementById("data");
 const dataCtx = data.getContext("2d");
-const circleButton = document.getElementById("circle");
 const roundButton = document.getElementById("round");
+
+const radioState = {};
+
+document.querySelectorAll('input[type="radio"]').forEach((radio) => {
+    if (radio.checked) {
+        radioState[radio.name] = radio.value;
+    }
+    radio.addEventListener("change", () => {
+        if (radio.checked) {
+            radioState[radio.name] = radio.value;
+        }
+    });
+});
 
 const size = 32;
 const spacing = 512 / size;
@@ -55,15 +67,30 @@ function render() {
     worldCtx.clearRect(0, 0, 512, 512);
     worldCtx.strokeStyle = "rgba(0, 0, 0, 0.1)";
 
-    let isCircle = circleButton.checked;
-
-    for (let x = 0.5; x < size; x++) {
-        for (let y = 0.5; y < size; y++) {
+    for (let i = 0; i < size; i++) {
+        for (let j = 0; j < size; j++) {
+            let start, dir;
+            if (radioState.index === "lr") {
+                start = [0, (i + 0.5) * spacing];
+                dir = [512, (j - i) * spacing];
+            } else if (radioState.index === "rtheta") {
+                let angle = ((i + 0.5) / size) * Math.PI * 2;
+                let offset = ((j + 0.5) * spacing) / 2;
+                dir = [1024 * Math.sin(angle), -1024 * Math.cos(angle)];
+                start = [
+                    offset * Math.cos(angle) - dir[0] / 2 + 256,
+                    offset * Math.sin(angle) - dir[1] / 2 + 256,
+                ];
+            } else if (radioState.index === "ytheta") {
+                let angle = ((j + 0.5) / size - 0.5) * Math.PI;
+                start = [0, (i + 0.5) * spacing];
+                dir = [1024 * Math.cos(angle), 1024 * Math.sin(angle)];
+            }
             let tmin, tmax;
-            if (isCircle) {
+            if (radioState.shape === "circle") {
                 [tmin, tmax] = intersectCircle(
-                    [0, x * spacing],
-                    [512, y * spacing - x * spacing],
+                    start,
+                    dir,
                     [
                         pixel[0] * spacing + spacing / 2,
                         pixel[1] * spacing + spacing / 2,
@@ -72,8 +99,8 @@ function render() {
                 );
             } else {
                 [tmin, tmax] = intersectAABB(
-                    [0, x * spacing],
-                    [512, y * spacing - x * spacing],
+                    start,
+                    dir,
                     [pixel[0] * spacing, pixel[1] * spacing],
                     [(pixel[0] + 1) * spacing, (pixel[1] + 1) * spacing],
                 );
@@ -86,15 +113,15 @@ function render() {
 
                 worldCtx.strokeStyle = `rgba(0, 0, 0, ${a})`;
                 worldCtx.beginPath();
-                worldCtx.moveTo(0, x * spacing);
-                worldCtx.lineTo(512, y * spacing);
+                worldCtx.moveTo(start[0], start[1]);
+                worldCtx.lineTo(start[0] + dir[0], start[1] + dir[1]);
                 worldCtx.stroke();
 
                 if (pixel[0] != -1) {
                     dataCtx.fillStyle = `rgba(0, 0, 0, ${a * 5})`;
                     dataCtx.fillRect(
-                        (x - 0.5) * spacing,
-                        (y - 0.5) * spacing,
+                        i * spacing,
+                        j * spacing,
                         spacing,
                         spacing,
                     );
@@ -104,7 +131,7 @@ function render() {
     }
 
     worldCtx.strokeStyle = "red";
-    if (isCircle) {
+    if (radioState.shape === "circle") {
         worldCtx.beginPath();
         worldCtx.arc(
             pixel[0] * spacing + spacing / 2,

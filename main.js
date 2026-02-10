@@ -73,6 +73,17 @@ function render() {
             if (radioState.index === "lr") {
                 start = [0, (i + 0.5) * spacing];
                 dir = [512, (j - i) * spacing];
+            } else if (radioState.index === "lb") {
+                start = [0, (i + 0.5) * spacing];
+                let end = [(j + 0.5) * spacing, 512];
+                dir = [end[0] - start[0], end[1] - start[1]];
+                // let start_side = i < size / 2;
+                // let end_side = j < size / 2;
+                // let a = ((i % (size / 2)) + 0.5) * spacing * 2;
+                // let b = ((j % (size / 2)) + 0.5) * spacing * 2;
+                // start = [start_side ? 0 : a, start_side ? a : 0];
+                // let end = [end_side ? 512 : b, end_side ? b : 512];
+                // dir = [end[0] - start[0], end[1] - start[1]];
             } else if (radioState.index === "rtheta") {
                 let angle = ((i + 0.5) / size) * Math.PI * 2;
                 let offset = ((j + 0.5) * spacing) / 2;
@@ -85,6 +96,26 @@ function render() {
                 let angle = ((j + 0.5) / size - 0.5) * Math.PI;
                 start = [0, (i + 0.5) * spacing];
                 dir = [1024 * Math.cos(angle), 1024 * Math.sin(angle)];
+            } else if (radioState.index === "ringtheta") {
+                let ringangle = ((i + 0.5) / size) * Math.PI * 2;
+                let angle = ringangle + ((j + 0.5) / size - 0.5) * Math.PI;
+                start = [
+                    256 + 256 * Math.cos(ringangle),
+                    256 + 256 * Math.sin(ringangle),
+                ];
+                dir = [-512 * Math.cos(angle), -512 * Math.sin(angle)];
+            } else if (radioState.index === "ring2") {
+                let ringangle1 = ((i + 0.5) / size) * Math.PI * 2;
+                let ringangle2 = ((j + 0.5) / size) * Math.PI * 2;
+                start = [
+                    256 + 256 * Math.cos(ringangle1),
+                    256 + 256 * Math.sin(ringangle1),
+                ];
+                let end = [
+                    256 + 256 * Math.cos(ringangle2),
+                    256 + 256 * Math.sin(ringangle2),
+                ];
+                dir = [end[0] - start[0], end[1] - start[1]];
             }
             let tmin, tmax;
             if (radioState.shape === "circle") {

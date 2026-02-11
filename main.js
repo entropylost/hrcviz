@@ -73,6 +73,9 @@ function render() {
             if (radioState.index === "lr") {
                 start = [0, (i + 0.5) * spacing];
                 dir = [512, (j - i) * spacing];
+            } else if (radioState.index === "is") {
+                start = [0, (i + 0.5) * spacing];
+                dir = [512, (j - (size - 1) / 2) * spacing];
             } else if (radioState.index === "lb") {
                 start = [0, (i + 0.5) * spacing];
                 let end = [(j + 0.5) * spacing, 512];

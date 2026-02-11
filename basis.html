@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="stylesheet" href="style.css" />
+    </head>
+    <body>
+        <canvas id="world" width="512" height="512"></canvas>
+        <canvas id="data" width="512" height="512"></canvas>
+
+        <fieldset>
+            <legend>Controls</legend>
+
+            <div>
+                <input type="checkbox" id="round" checked />
+                <label for="round">Round to nearest</label>
+                <br />
+                <input type="checkbox" id="lines" />
+                <label for="lines">Draw basis lines</label>
+
+                <br />
+                <button id="clear">Clear Display</button>
+            </div>
+        </fieldset>
+
+        <script src="basis.js"></script>
+    </body>
+</html>

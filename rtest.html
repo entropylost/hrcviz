@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <title>Hello World</title>
+    <link rel="modulepreload" href="/hrcviz/hrcviz2-120042bd7a79e9c.js" crossorigin="anonymous" integrity="sha384-nwfkbWsL89e3Hg8wrsBz3wWp21FwFV4eJExcO1j3HlyPTG1evBw4iKC0h51YcAcJ"><link rel="preload" href="/hrcviz/hrcviz2-120042bd7a79e9c_bg.wasm" crossorigin="anonymous" integrity="sha384-7DI7wwUxjDyCRWCXjUkew+IPpSAJ0LqdHgk5/the2IeQlC0keciGQ0hXzFfLxYjx" as="fetch" type="application/wasm"></head>
+    <body>
+<script type="module">
+import init, * as bindings from '/hrcviz/hrcviz2-120042bd7a79e9c.js';
+const wasm = await init({ module_or_path: '/hrcviz/hrcviz2-120042bd7a79e9c_bg.wasm' });
+
+
+window.wasmBindings = bindings;
+
+
+dispatchEvent(new CustomEvent("TrunkApplicationStarted", {detail: {wasm}}));
+
+</script></body>
+</html>

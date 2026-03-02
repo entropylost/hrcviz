@@ -2,12 +2,16 @@
 <html lang="en">
     <head>
         <meta charset="utf-8" />
-        <title>Hello World</title>
-    <link rel="modulepreload" href="/hrcviz/hrcviz2-120042bd7a79e9c.js" crossorigin="anonymous" integrity="sha384-nwfkbWsL89e3Hg8wrsBz3wWp21FwFV4eJExcO1j3HlyPTG1evBw4iKC0h51YcAcJ"><link rel="preload" href="/hrcviz/hrcviz2-120042bd7a79e9c_bg.wasm" crossorigin="anonymous" integrity="sha384-7DI7wwUxjDyCRWCXjUkew+IPpSAJ0LqdHgk5/the2IeQlC0keciGQ0hXzFfLxYjx" as="fetch" type="application/wasm"></head>
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="stylesheet" href="/hrcviz/style-e54d19b31f478ee9.css" integrity="sha384-pXccMsto7rO69hgJtig+JRNjJDsAUdPhPvqVNXkyNu5LxDtfoeP0LAksW8PlAqEI"/>
+        <title>HRC Visualizations</title>
+    <link rel="modulepreload" href="/hrcviz/hrcviz2-e7217d1f25883f9b.js" crossorigin="anonymous" integrity="sha384-FgB/tmG8TNzzjdvyUstJow0LpLQV60hM3cX4KngOjnVEA+8tEhMuVd5aJj6qeSWe"><link rel="preload" href="/hrcviz/hrcviz2-e7217d1f25883f9b_bg.wasm" crossorigin="anonymous" integrity="sha384-WfNekII9a6HHP14LSePAcQVVCzBj+jpCSqk7tSlZZsggjSn8+WLYhW8+7XuOjv0a" as="fetch" type="application/wasm"></head>
     <body>
+        <canvas id="main"></canvas>
+        
 <script type="module">
-import init, * as bindings from '/hrcviz/hrcviz2-120042bd7a79e9c.js';
-const wasm = await init({ module_or_path: '/hrcviz/hrcviz2-120042bd7a79e9c_bg.wasm' });
+import init, * as bindings from '/hrcviz/hrcviz2-e7217d1f25883f9b.js';
+const wasm = await init({ module_or_path: '/hrcviz/hrcviz2-e7217d1f25883f9b_bg.wasm' });
 
 
 window.wasmBindings = bindings;
@@ -15,5 +19,6 @@ window.wasmBindings = bindings;
 
 dispatchEvent(new CustomEvent("TrunkApplicationStarted", {detail: {wasm}}));
 
-</script></body>
+</script>
+    </body>
 </html>

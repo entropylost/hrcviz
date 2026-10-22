@@ -186,6 +186,8 @@ function get_probe_transmission(probe, emitter, ctx) {
 const canvas = document.getElementById("canvas");
 const output = document.getElementById("output");
 
+let cursor_pos = null;
+
 function handle_mouse_event(e) {
     if (e.buttons !== 1) {
         return;
@@ -195,17 +197,17 @@ function handle_mouse_event(e) {
     const y = e.clientY - rect.top;
     const scaling = 32;
     const offset = use_half_probes ? 0.5 : 0;
-    const cursor_pos = {
+    cursor_pos = {
         x: Math.floor(x / scaling - offset),
         y: Math.floor(y / scaling),
     };
-    draw(cursor_pos);
+    draw();
 }
 
 canvas.addEventListener("mousedown", handle_mouse_event);
 canvas.addEventListener("mousemove", handle_mouse_event);
 
-function draw(cursor_pos) {
+function draw() {
     const ctx = canvas.getContext("2d");
     ctx.resetTransform();
     ctx.fillStyle = "black";

@@ -17,6 +17,13 @@
 		<label for="derivatives">Number of derivatives</label>
 		<input type="text" id="scaling" name="scaling" value="1">
 		<label for="scaling">Output scaling (1.12 is optimal for single derivative)</label>
+		<div></div>
+		<canvas id="histogram" width="768" height="256"></canvas>
+		<div></div>
+		<input type="number" id="hist_min" name="hist_min" step="0.05" value="-0.5">
+		<label for="hist_min">Histogram min</label>
+		<input type="number" id="hist_max" name="hist_max" step="0.05" value="0.5">
+		<label for="hist_max">Histogram max</label>
 		<div id="output"></div>
 		<script src="error.js"></script>
 	</body>

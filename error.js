@@ -116,6 +116,18 @@ document.getElementById("scaling").addEventListener("change", (e) => {
     draw();
 });
 
+let hist_min = parseFloat(document.getElementById("hist_min").value);
+document.getElementById("hist_min").addEventListener("change", (e) => {
+    hist_min = parseFloat(e.target.value);
+    draw();
+});
+
+let hist_max = parseFloat(document.getElementById("hist_max").value);
+document.getElementById("hist_max").addEventListener("change", (e) => {
+    hist_max = parseFloat(e.target.value);
+    draw();
+});
+
 function get_probes_around(position, cascade) {
     const l = get_probe_spacing(cascade);
     const offset = use_half_probes ? l / 2 : 0;
@@ -185,6 +197,7 @@ function get_probe_transmission(probe, emitter, ctx) {
 
 const canvas = document.getElementById("canvas");
 const output = document.getElementById("output");
+const histogram = document.getElementById("histogram");
 
 let cursor_pos = null;
 
@@ -207,6 +220,72 @@ function handle_mouse_event(e) {
 canvas.addEventListener("mousedown", handle_mouse_event);
 canvas.addEventListener("mousemove", handle_mouse_event);
 
+function draw_histogram(errors) {
+    const ctx = histogram.getContext("2d");
+    const width = histogram.width;
+    const height = histogram.height;
+    const margin = 20;
+    ctx.resetTransform();
+    ctx.fillStyle = "white";
+    ctx.fillRect(0, 0, width, height);
+
+    const bin_count = 64;
+    const span = hist_max - hist_min;
+    if (!(span > 0)) {
+        return;
+    }
+    const bins = new Array(bin_count).fill(0);
+    let out_of_range = 0;
+    for (const error of errors) {
+        const t = (error - hist_min) / span;
+        if (t < 0 || t > 1) {
+            out_of_range++;
+            continue;
+        }
+        bins[Math.min(Math.floor(t * bin_count), bin_count - 1)]++;
+    }
+    const max_count = Math.max(...bins, 1);
+
+    const plot_height = height - 2 * margin;
+    const bin_width = width / bin_count;
+    for (let i = 0; i < bin_count; i++) {
+        const center = hist_min + ((i + 0.5) / bin_count) * span;
+        const bar_height = (bins[i] / max_count) * plot_height;
+        ctx.fillStyle = icefire_color(center * 2);
+        // Bars hang down from the axis at the top.
+        ctx.fillRect(i * bin_width, margin, bin_width - 1, bar_height);
+    }
+
+    ctx.strokeStyle = "black";
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(0, margin - 0.5);
+    ctx.lineTo(width, margin - 0.5);
+    if (hist_min < 0 && hist_max > 0) {
+        const zero_x = (-hist_min / span) * width;
+        ctx.moveTo(zero_x, margin);
+        ctx.lineTo(zero_x, height - margin);
+    }
+    ctx.stroke();
+
+    ctx.fillStyle = "black";
+    ctx.font = "12px sans-serif";
+    ctx.textBaseline = "bottom";
+    ctx.textAlign = "left";
+    ctx.fillText(`${hist_min}`, 2, margin - 4);
+    if (hist_min < 0 && hist_max > 0) {
+        ctx.textAlign = "center";
+        ctx.fillText("0", (-hist_min / span) * width, margin - 4);
+    }
+    ctx.textAlign = "right";
+    ctx.fillText(`${hist_max}`, width - 2, margin - 4);
+    ctx.fillText(
+        `max count: ${max_count}, out of range: ${out_of_range}`,
+        width - 2,
+        height - 4,
+    );
+}
+
 function draw() {
     const ctx = canvas.getContext("2d");
     ctx.resetTransform();
@@ -218,7 +297,7 @@ function draw() {
     ctx.fillRect(0, 0, 1, 1);
     ctx.lineWidth = 0.1;
 
-    let total_error = 0;
+    let errors = [];
 
     const offset = use_half_probes ? 0.5 : 0;
     for (let y = 0; y < 32; y++) {
@@ -233,7 +312,7 @@ function draw() {
             const error =
                 (transmission.transmission.value * output_scaling - target) /
                 target;
-            total_error += Math.abs(error);
+            errors.push(error);
             ctx.fillStyle = icefire_color(error * 2);
             ctx.fillRect(x - 0.5 + offset, y, 1, 1);
         }
@@ -243,9 +322,23 @@ function draw() {
         ctx.strokeRect(cursor_pos.x - 0.5 + offset, cursor_pos.y, 1, 1);
     }
 
-    const average_error = total_error / (32 * 32);
+    draw_histogram(errors);
 
-    output.innerText = `Average error: ${average_error.toFixed(6)}`;
+    const max_negative_error = Math.min(...errors);
+    const max_positive_error = Math.max(...errors);
+    const abs_errors = errors.map(Math.abs).sort((a, b) => a - b);
+    const mid = abs_errors.length / 2;
+    const median_abs_error =
+        abs_errors.length % 2 === 0
+            ? (abs_errors[mid - 1] + abs_errors[mid]) / 2
+            : abs_errors[Math.floor(mid)];
+    const mean_abs_error =
+        abs_errors.reduce((a, b) => a + b, 0) / abs_errors.length;
+
+    output.innerText = `Max negative error: ${max_negative_error.toFixed(6)}
+Max positive error: ${max_positive_error.toFixed(6)}
+Median absolute error: ${median_abs_error.toFixed(6)}
+Mean absolute error: ${mean_abs_error.toFixed(6)}`;
 
     if (cursor_pos) {
         if (cursor_pos.x < 32) {

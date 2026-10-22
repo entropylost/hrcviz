@@ -10,9 +10,14 @@
 		<h1>HRC Interpolation Error Visualizer</h1>
 		<div>y-axis: position of probe, x-axis: distance between emitter and probe</div>
 		<canvas id="canvas" width="1792" height="768"></canvas>
-		<div id="output"></div>
+		<div></div>
 		<input type="checkbox" id="mode" name="mode">
 		<label for="mode">Use half-integer probe positions</label>
+		<input type="checkbox" id="gradient" name="gradient">
+		<label for="gradient">Use gradient</label>
+		<input type="text" id="scaling" name="scaling" value="1">
+		<label for="scaling">Output scaling (1.12 is optimal for gradient)</label>
+		<div id="output"></div>
 		<script src="error.js"></script>
 	</body>
 </html>

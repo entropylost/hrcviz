@@ -81,7 +81,23 @@ function get_probe_transmission_ideal(probe, emitter) {
     return { transmission, excluded: false };
 }
 
-let use_half_probes = false;
+let use_half_probes = document.getElementById("mode").checked;
+document.getElementById("mode").addEventListener("change", (e) => {
+    use_half_probes = e.target.checked;
+    draw();
+});
+
+let use_gradient = document.getElementById("gradient").checked;
+document.getElementById("gradient").addEventListener("change", (e) => {
+    use_gradient = e.target.checked;
+    draw();
+});
+
+let output_scaling = parseFloat(document.getElementById("scaling").value);
+document.getElementById("scaling").addEventListener("change", (e) => {
+    output_scaling = parseFloat(e.target.value);
+    draw();
+});
 
 function get_probes_around(position, cascade) {
     const l = get_probe_spacing(cascade);
@@ -123,9 +139,17 @@ function get_probe_transmission(probe, emitter, ctx) {
     }
 
     if (dist < l) {
-        return { transmission: 0, excluded: true };
+        return { transmission: null, excluded: true };
     }
-    let transmission = 0;
+    let transmission = {
+        value: 0,
+        gradient: 0,
+    };
+    let ideal = {
+        value: 1 / dist,
+        // gradient relative to probe position
+        gradient: use_gradient ? 1 / (dist * dist) : 0,
+    };
     for (const { probe, weight } of get_probes_around(position, cascade + 1)) {
         let { transmission: t, excluded } = get_probe_transmission(
             probe,
@@ -134,20 +158,22 @@ function get_probe_transmission(probe, emitter, ctx) {
         );
         // Too early (this should be a finite range); so hit the tracing branch.
         if (excluded) {
-            t = 1 / dist;
+            t = ideal;
+        } else {
+            // reproject transmission to the current probe's position
+            t = {
+                value: t.value + t.gradient * (position - probe.position),
+                gradient: t.gradient,
+            };
         }
-        transmission += t * weight;
+        transmission.value += t.value * weight;
+        transmission.gradient += t.gradient * weight;
     }
     return { transmission, excluded: false };
 }
 
 const canvas = document.getElementById("canvas");
 const output = document.getElementById("output");
-
-document.getElementById("mode").addEventListener("change", (e) => {
-    use_half_probes = e.target.checked;
-    draw();
-});
 
 document.getElementById("canvas").addEventListener("mousedown", (e) => {
     const rect = canvas.getBoundingClientRect();
@@ -185,7 +211,9 @@ function draw(cursor_pos) {
                 emitter_pos,
             );
             const target = 1 / (emitter_pos - probe_pos);
-            const error = (transmission.transmission - target) / target;
+            const error =
+                (transmission.transmission.value * output_scaling - target) /
+                target;
             total_error += Math.abs(error);
             ctx.fillStyle = icefire_color(error * 2);
             ctx.fillRect(x - 0.5 + offset, y, 1, 1);
@@ -212,16 +240,17 @@ function draw(cursor_pos) {
             ctx,
         );
         const target = 1 / (emitter_pos - probe_pos);
-        const error = (transmission.transmission - target) / target;
+        const error = (transmission.transmission.value - target) / target;
         ctx.fillStyle = "white";
         ctx.beginPath();
         ctx.arc(emitter_pos, 0.5, 0.3, 0, 2 * Math.PI);
         ctx.fill();
         output.innerText += `
 Probe selected at ${probe_pos}, emitter at ${emitter_pos}
-Calculated transmission: ${transmission.transmission}
-Theoretical transmission: ${target}
-Error: ${error}`;
+Calculated transmission: ${transmission.transmission.value.toFixed(6)}
+Transmission gradient: ${transmission.transmission.gradient.toFixed(6)}
+Theoretical transmission: ${target.toFixed(6)}
+Error: ${error.toFixed(6)}`;
     }
 }
 

@@ -81,15 +81,32 @@ function get_probe_transmission_ideal(probe, emitter) {
     return { transmission, excluded: false };
 }
 
+function reproject_transmission(transmission, position, target) {
+    const x = target - position;
+    const gradient = transmission.gradient + transmission.curvature * x;
+    const value =
+        transmission.value +
+        transmission.gradient * x +
+        0.5 * transmission.curvature * x * x;
+    return { value, gradient, curvature: transmission.curvature };
+}
+function get_transmission(dist, derivatives) {
+    return {
+        value: 1 / dist,
+        gradient: derivatives >= 1 ? 1 / (dist * dist) : 0,
+        curvature: derivatives >= 2 ? 2 / (dist * dist * dist) : 0,
+    };
+}
+
 let use_half_probes = document.getElementById("mode").checked;
 document.getElementById("mode").addEventListener("change", (e) => {
     use_half_probes = e.target.checked;
     draw();
 });
 
-let use_gradient = document.getElementById("gradient").checked;
-document.getElementById("gradient").addEventListener("change", (e) => {
-    use_gradient = e.target.checked;
+let derivatives = document.getElementById("derivatives").value;
+document.getElementById("derivatives").addEventListener("change", (e) => {
+    derivatives = e.target.value;
     draw();
 });
 
@@ -144,11 +161,7 @@ function get_probe_transmission(probe, emitter, ctx) {
     let transmission = {
         value: 0,
         gradient: 0,
-    };
-    let ideal = {
-        value: 1 / dist,
-        // gradient relative to probe position
-        gradient: use_gradient ? 1 / (dist * dist) : 0,
+        curvature: 0,
     };
     for (const { probe, weight } of get_probes_around(position, cascade + 1)) {
         let { transmission: t, excluded } = get_probe_transmission(
@@ -158,16 +171,14 @@ function get_probe_transmission(probe, emitter, ctx) {
         );
         // Too early (this should be a finite range); so hit the tracing branch.
         if (excluded) {
-            t = ideal;
+            t = get_transmission(dist, derivatives);
         } else {
             // reproject transmission to the current probe's position
-            t = {
-                value: t.value + t.gradient * (position - probe.position),
-                gradient: t.gradient,
-            };
+            t = reproject_transmission(t, probe.position, position);
         }
         transmission.value += t.value * weight;
         transmission.gradient += t.gradient * weight;
+        transmission.curvature += t.curvature * weight;
     }
     return { transmission, excluded: false };
 }
@@ -175,7 +186,10 @@ function get_probe_transmission(probe, emitter, ctx) {
 const canvas = document.getElementById("canvas");
 const output = document.getElementById("output");
 
-document.getElementById("canvas").addEventListener("mousedown", (e) => {
+function handle_mouse_event(e) {
+    if (e.buttons !== 1) {
+        return;
+    }
     const rect = canvas.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
@@ -186,7 +200,10 @@ document.getElementById("canvas").addEventListener("mousedown", (e) => {
         y: Math.floor(y / scaling),
     };
     draw(cursor_pos);
-});
+}
+
+canvas.addEventListener("mousedown", handle_mouse_event);
+canvas.addEventListener("mousemove", handle_mouse_event);
 
 function draw(cursor_pos) {
     const ctx = canvas.getContext("2d");
@@ -229,28 +246,62 @@ function draw(cursor_pos) {
     output.innerText = `Average error: ${average_error.toFixed(6)}`;
 
     if (cursor_pos) {
-        const x = Math.floor(cursor_pos.x);
-        const y = Math.floor(cursor_pos.y);
-        const probe_pos = y + offset;
-        const emitter_pos = probe_pos + x + 1;
-        ctx.translate(32, 0);
-        const transmission = get_probe_transmission(
-            { position: probe_pos, cascade: 0 },
-            emitter_pos,
-            ctx,
-        );
-        const target = 1 / (emitter_pos - probe_pos);
-        const error = (transmission.transmission.value - target) / target;
-        ctx.fillStyle = "white";
-        ctx.beginPath();
-        ctx.arc(emitter_pos, 0.5, 0.3, 0, 2 * Math.PI);
-        ctx.fill();
-        output.innerText += `
+        if (cursor_pos.x < 32) {
+            const x = Math.floor(cursor_pos.x);
+            const y = Math.floor(cursor_pos.y);
+            const probe_pos = y + offset;
+            const emitter_pos = probe_pos + x + 1;
+            ctx.translate(32, 0);
+            const transmission = get_probe_transmission(
+                { position: probe_pos, cascade: 0 },
+                emitter_pos,
+                ctx,
+            );
+            const target = 1 / (emitter_pos - probe_pos);
+            const error = (transmission.transmission.value - target) / target;
+            ctx.fillStyle = "white";
+            ctx.beginPath();
+            ctx.arc(emitter_pos, 0.5, 0.3, 0, 2 * Math.PI);
+            ctx.fill();
+            output.innerText += `
 Probe selected at ${probe_pos}, emitter at ${emitter_pos}
 Calculated transmission: ${transmission.transmission.value.toFixed(6)}
 Transmission gradient: ${transmission.transmission.gradient.toFixed(6)}
 Theoretical transmission: ${target.toFixed(6)}
 Error: ${error.toFixed(6)}`;
+        } else {
+            const emitter_pos_x = cursor_pos.x - 32 + offset;
+            const emitter_pos_y = cursor_pos.y + offset;
+
+            for (let y = 0; y < 32; y++) {
+                for (let x = 0; x < 32; x++) {
+                    const probe_pos_x = x + offset;
+                    const probe_pos_y = y + offset;
+                    const dist = Math.sqrt(
+                        (emitter_pos_x - probe_pos_x) ** 2 +
+                            (emitter_pos_y - probe_pos_y) ** 2,
+                    );
+                    const facing =
+                        Math.abs(emitter_pos_x - probe_pos_x) >
+                        Math.abs(emitter_pos_y - probe_pos_y);
+                    const probe_pos = facing ? probe_pos_x : probe_pos_y;
+                    const transmission = get_probe_transmission(
+                        { position: probe_pos, cascade: 0 },
+                        probe_pos + dist,
+                    );
+                    if (transmission.excluded) {
+                        continue;
+                    }
+                    ctx.fillStyle = `rgba(255, 255, 255, ${transmission.transmission.value})`;
+                    ctx.fillRect(
+                        probe_pos_x + 32 - 0.5,
+                        probe_pos_y - offset,
+                        1,
+                        1,
+                    );
+                }
+            }
+        }
     }
 }
 

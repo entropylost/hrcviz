@@ -8,15 +8,15 @@
 	</head>
 	<body>
 		<h1>HRC Interpolation Error Visualizer</h1>
-		<div>y-axis: position of probe, x-axis: distance between emitter and probe</div>
+		<div>y-axis: position of probe, x-axis: distance between emitter and probe. Click on pixels on left to see cascade information, or click on right to see the falloff in 2D.</div>
 		<canvas id="canvas" width="1792" height="768"></canvas>
 		<div></div>
 		<input type="checkbox" id="mode" name="mode">
 		<label for="mode">Use half-integer probe positions</label>
-		<input type="checkbox" id="gradient" name="gradient">
-		<label for="gradient">Use gradient</label>
+		<input type="number" id="derivatives" name="derivatives" min="0" max="2" value="0">
+		<label for="derivatives">Number of derivatives</label>
 		<input type="text" id="scaling" name="scaling" value="1">
-		<label for="scaling">Output scaling (1.12 is optimal for gradient)</label>
+		<label for="scaling">Output scaling (1.12 is optimal for single derivative)</label>
 		<div id="output"></div>
 		<script src="error.js"></script>
 	</body>

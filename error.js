@@ -110,6 +110,12 @@ document.getElementById("derivatives").addEventListener("change", (e) => {
     draw();
 });
 
+let merge_mode = document.getElementById("interpolate").value;
+document.getElementById("interpolate").addEventListener("change", (e) => {
+    merge_mode = e.target.value;
+    draw();
+});
+
 let output_scaling = parseFloat(document.getElementById("scaling").value);
 document.getElementById("scaling").addEventListener("change", (e) => {
     output_scaling = parseFloat(e.target.value);
@@ -133,8 +139,17 @@ function get_probes_around(position, cascade) {
     const offset = use_half_probes ? l / 2 : 0;
     const left = Math.floor((position - offset) / l) * l + offset;
     const right = left + l;
-    const left_weight = 1 - (position - left) / l;
-    const right_weight = 1 - left_weight;
+    let left_weight = 1 - (position - left) / l;
+    let right_weight = 1 - left_weight;
+    if (left_weight !== 0 && right_weight !== 0) {
+        if (merge_mode === "near") {
+            left_weight = 1;
+            right_weight = 0;
+        } else if (merge_mode === "far") {
+            left_weight = 0;
+            right_weight = 1;
+        }
+    }
     const probes = [];
     if (left_weight > 0) {
         probes.push({
@@ -379,7 +394,11 @@ Error: ${error.toFixed(6)}`;
                     const facing =
                         Math.abs(emitter_pos_x - probe_pos_x) >
                         Math.abs(emitter_pos_y - probe_pos_y);
-                    const probe_pos = facing ? probe_pos_x : probe_pos_y;
+                    const flip = facing
+                        ? emitter_pos_x < probe_pos_x
+                        : emitter_pos_y < probe_pos_y;
+                    let probe_pos = facing ? probe_pos_x : probe_pos_y;
+                    probe_pos = flip ? 64 - probe_pos : probe_pos;
                     const transmission = get_probe_transmission(
                         { position: probe_pos, cascade: 0 },
                         probe_pos + dist,

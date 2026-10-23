@@ -17,6 +17,12 @@
 		<label for="derivatives">Number of derivatives</label>
 		<input type="text" id="scaling" name="scaling" value="1">
 		<label for="scaling">Output scaling (1.12 is optimal for single derivative)</label>
+		<select id="interpolate" name="interpolate">
+			<option value="interpolate">Interpolate</option>
+			<option value="near">Near</option>
+			<option value="far">Far</option>
+		</select>
+		<label for="interpolate">Merging mode</label>
 		<div></div>
 		<canvas id="histogram" width="768" height="256"></canvas>
 		<div></div>

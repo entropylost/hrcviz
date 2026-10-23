@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<link rel="stylesheet" href="/hrcviz/reproject/style-34d0ffd9f4a713e5.css" integrity="sha384-OK3FsDCrbBp5xDcgMdtABoE47G6a80TUXjOiDYuUqu+YuXogX8q1SiNbpTcoryly"/>
+		<title>HRC Visualizations</title>
+	<link rel="modulepreload" href="/hrcviz/reproject/hrcviz2-95557e58d0c44b9d.js" crossorigin="anonymous" integrity="sha384-VklxKXGalteqyTKTqA9MnFSYl1dwm3PkNSLFsruTOzeATJj1244/ejCPiTXPx9NW"><link rel="preload" href="/hrcviz/reproject/hrcviz2-95557e58d0c44b9d_bg.wasm" crossorigin="anonymous" integrity="sha384-W9KOpvAawoAX+IsYk7auMGC6hGKYKVuOQD1kx2kXnGM5tkmFIR8jR9VUlWVyapAf" as="fetch" type="application/wasm"></head>
+	<body>
+		<canvas id="main"></canvas>
+		<div id="controls">
+			<label for="transmission">Reprojection mode:</label>
+			<select name="transmission" id="transmission"></select>
+			<br>
+			<label for="frustrum-len">Frustrum length:</label>
+			<input type="number" name="frustrum-len" id="frustrum-len" value="2" step="0.1" min="1" max="4">
+		</div>
+		
+<script type="module">
+import init, * as bindings from '/hrcviz/reproject/hrcviz2-95557e58d0c44b9d.js';
+const wasm = await init({ module_or_path: '/hrcviz/reproject/hrcviz2-95557e58d0c44b9d_bg.wasm' });
+
+
+window.wasmBindings = bindings;
+
+
+dispatchEvent(new CustomEvent("TrunkApplicationStarted", {detail: {wasm}}));
+
+</script>
+	</body>
+</html>

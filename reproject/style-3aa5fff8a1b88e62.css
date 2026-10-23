@@ -24,4 +24,15 @@ body {
   overflow: hidden;
 }
 
-/*# sourceMappingURL=data:application/json;charset=utf-8,%7B%22version%22:3,%22sourceRoot%22:%22%22,%22sources%22:%5B%22../../style.scss%22%5D,%22names%22:%5B%5D,%22mappings%22:%22AAAA;EACI;EACA;;;AAGJ;EACI;;;AAGJ;EACI;EACA;EACA;EACA;EACA;EACA;AACA;AAAA;AAAA;AAAA;EAKA;EACA;EACA;EACA%22,%22file%22:%22style.css%22%7D */
+#transmission {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  font-family: inherit;
+  color: inherit;
+  background: var(--background);
+  border: 1px solid #555;
+  padding: 4px;
+}
+
+/*# sourceMappingURL=data:application/json;charset=utf-8,%7B%22version%22:3,%22sourceRoot%22:%22%22,%22sources%22:%5B%22../../style.scss%22%5D,%22names%22:%5B%5D,%22mappings%22:%22AAAA;EACI;EACA;;;AAGJ;EACI;;;AAGJ;EACI;EACA;EACA;EACA;EACA;EACA;AACA;AAAA;AAAA;AAAA;EAKA;EACA;EACA;EACA;;;AAGJ;EACI;EACA;EACA;EACA;EACA;EACA;EACA;EACA%22,%22file%22:%22style.css%22%7D */
